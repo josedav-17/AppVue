@@ -1,15 +1,11 @@
 @if ($errors->any())
-
-<div class="alert alert-danger" role="alert">
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
     <ul>
         @foreach ($errors->all() as $error)
             <li>{{ $error }}</li>
         @endforeach
     </ul>
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-
-</div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
     
 @endif

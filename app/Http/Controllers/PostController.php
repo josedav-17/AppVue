@@ -2,32 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\post;// MODELO DE POST
-use Illuminate\Http\Request; // PARA PODER RECIBIR DATOS
-use App\Http\Requests\StorePost; // PARA PODER VALIDAR LOS DATOS
-
-// llamamos al controlador de categorias para poder usarlo en el controlador de post
-use App\Http\Controllers\CategoryController;
-
-
+use App\Models\Post;
+use Illuminate\Http\Request;
+use App\Models\Category;
 
 class PostController extends Controller
 {
-
-    public function __construct()
+    function __Construct()
     {
         $this->middleware('auth')->except('index', 'show');
+        // $this->middleware('permission:ver-post|crear-post|editar-post|borrar-post',['only'=>['index']]);
+        // $this->middleware('permission:crear-post',['only'=>['create','store']]);
+        // $this->middleware('permission:editar-post',['only'=>['edit','update']]);
+        // $this->middleware('permission:borrar-post',['only'=>['destroy']]);
+
     }
-
-
     /**
      * Display a listing of the resource.
      */
     public function index()
-    {    
-        // FUNCION PARA MOSTRAR TODOS LOS POSTS
-        $posts = post::paginate(5);
-        return view('dashboard.post.index', ['posts' => $posts]);
+    {
+        $posts=Post::paginate(5);
+        return view('dashboard.post.index',['post'=>$posts, 'category'=>Category::all()]);
+        // return view('dashboard.post.index',['post'=>$posts, 'category'=>Category::all()]);
+
     }
 
     /**
@@ -35,69 +33,77 @@ class PostController extends Controller
      */
     public function create()
     {
-        // para crear un post se deben de pasar los datos del usuario que lo crea
-        return view('dashboard.post.create');
-        // los datos que enviamos a la base de datos son los siguientes
-        // name, description, user_id
-
-
+        $category=Category::all();
+        return view('dashboard.post.create', ['category'=>$category]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StorePost $request)
+    public function store(Request $request)
     {
-        // FUNCION PARA GUARDAR UN POST
-        $post = new post;
-        $post->name = $request->name;
-        $post->description = $request->description;
-        $post->user_id = $request->user_id;
-        $post->category_id = $request->category_id;
+        $request->validate([
+            'name'=>'required|min:3|max:100',
+            'description'=>'required|min:5'
+        ]);
+
+        $post = new Post();
+        $post->user_id=auth()->user()->id;
+        $post->name=$request->input('name');
+        $post->description=$request->input('description');
+        $post->category_id=$request->input('category');
         $post->save();
 
-        return back()->with('status', 'Post creado con exito');
+        return view("dashboard.post.message",['msg'=>"Publicación creada con exito"]);
+
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(post $post)
+    public function show(Post $post)
     {
-        // FUNCION PARA MOSTRAR UN POST
-
-        return view('dashboard.post.show', ['post' => $post]);
+        //funcion para mostrar el post
+        return view('dashboard.post.show',['post'=>$post]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(post $post)
+    public function edit($id)
     {
-        // FUNCION PARA EDITAR UN POST
-        return view('dashboard.post.edit', ['post' => $post]);
+        $post=Post::find($id);
+        return view('dashboard.post.edit',['post'=>$post, 'category'=>Category::all()]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, post $post)
+    public function update(Request $request, $id)
     {
-    
-        $post->update($request->validated());
-        return back()->with('status', 'Post actualizado con exito');
+        $request->validate([
+            'name'=>'required|min:3|max:100',
+            'description'=>'required|min:5'
+        ]);
 
+        $post = Post::find($id);
+        $post->user_id=auth()->user()->id;
+        $post->name=$request->input('name');
+        $post->description=$request->input('description');
+        $post->category_id=$request->input('category');
+        $post->save();
+        
+        return view("dashboard.post.message",['msg'=>"Publicación Modificada con exito"]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(post $post)
+    public function destroy($id)
     {
-        // FUNCION PARA ELIMINAR UN POST
+        $post=Post::find($id);
         $post->delete();
-        return back()->with('status', 'Post eliminado con exito');
+        return redirect("dashboard/post");
         
-
     }
 }

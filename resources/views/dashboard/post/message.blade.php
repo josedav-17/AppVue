@@ -1,12 +1,8 @@
 @extends('dashboard.master')
-@section('titulo', 'Mensaje')
+@section('titulo','Mensaje')
 @section('contenido')
-@csrf
-<h1>Mensaje</h1>
+<h1>Mensaje:</h1>
 <div class="container py-4">
-    <h2>{{ $message }}</h2>
-    <a href="{{ url('dashboard/post') }}" class="btn btn-primary">Volver</a>
-
+    <h2>{{ $msg }}</h2>
+    <a href="{{ url('dashboard/post') }}" class="btn btn-secondary">Regresar</a>
 </div>
-
-@endsection
